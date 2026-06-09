@@ -85,18 +85,58 @@ namespace losowanie
         RefreshList();
     }
 
-    private void OnRandomClicked(object sender, EventArgs e)
-    {
-        if (students.Count == 0)
-            return;
+        private void OnRandomClicked(object sender, EventArgs e)
+        {
+            string className = classEntry.Text;
 
-        Random rnd = new Random();
-        int index = rnd.Next(students.Count);
+            if (string.IsNullOrWhiteSpace(className))
+            {
+                resultLabel.Text = "Podaj klasê";
+                return;
+            }
 
-        resultLabel.Text = "Wylosowano: " + students[index];
-    }
+            if (!File.Exists(filePath))
+            {
+                resultLabel.Text = "Brak pliku z klasami";
+                return;
+            }
 
-    private void OnDeleteClicked(object sender, EventArgs e)
+            students.Clear();
+            bool found = false;
+
+            foreach (var line in File.ReadAllLines(filePath))
+            {
+                if (line == $"[{className}]")
+                {
+                    found = true;
+                    continue;
+                }
+
+                if (found)
+                {
+                    if (line.StartsWith("["))
+                        break;
+
+                    if (!string.IsNullOrWhiteSpace(line))
+                        students.Add(line);
+                }
+            }
+
+            if (students.Count == 0)
+            {
+                resultLabel.Text = "Brak uczniów w klasie " + className;
+                return;
+            }
+
+            Random rnd = new Random();
+            int index = rnd.Next(students.Count);
+
+            resultLabel.Text = "Wylosowano: " + students[index];
+
+            RefreshList();
+        }
+
+        private void OnDeleteClicked(object sender, EventArgs e)
     {
         if (studentsList.SelectedItem != null)
         {
